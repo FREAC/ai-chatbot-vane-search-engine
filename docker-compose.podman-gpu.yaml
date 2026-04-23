@@ -1,0 +1,36 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-gpu
+    restart: unless-stopped
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama-data:/root/.ollama
+    devices:
+      - nvidia.com/gpu=all
+    networks:
+      - ai-net
+
+  vane:
+    image: itzcrazykns1337/vane:latest
+    container_name: vane
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - vane-data:/home/vane/data
+    depends_on:
+      - ollama
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    name: ai-net
+
+volumes:
+  ollama-data:
+    name: ollama-data
+  vane-data:
+    name: vane-data

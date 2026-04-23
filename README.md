@@ -129,6 +129,50 @@ If you prefer to build from source or need more control:
 
 **Note**: After the containers are built, you can start Vane directly from Docker without having to open a terminal.
 
+#### Podman + NVIDIA GPU (Windows/WSL, No Compose)
+
+If you use Podman on Windows and want Ollama + Vane in the same Podman network with GPU, use the portable setup below.
+
+Quick one-command bootstrap (includes GPU setup, stack startup, and model pull):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\\scripts\\bootstrap-all.ps1
+```
+
+Or run the steps manually:
+
+1. Run the one-time GPU bootstrap script (creates CDI config inside Podman machine):
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\scripts\setup-podman-gpu.ps1
+   ```
+
+2. Start Vane + Ollama using direct Podman commands:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\\scripts\\run-podman-gpu-stack.ps1
+   ```
+
+3. Pull a model into the Ollama container (example):
+
+   ```powershell
+   podman exec -it ollama-gpu ollama pull qwen3.6:27b
+   ```
+
+4. In Vane settings, set Ollama API URL to:
+
+   ```text
+   http://ollama-gpu:11434
+   ```
+
+5. Optional GPU check:
+
+   ```powershell
+   podman exec -it ollama-gpu nvidia-smi
+   ```
+
+If you prefer Compose, an optional file is available at `docker-compose.podman-gpu.yaml`.
+
 ### Non-Docker Installation
 
 1. Install SearXNG and allow `JSON` format in the SearXNG settings. Make sure Wolfram Alpha search engine is also enabled.
@@ -191,6 +235,10 @@ If you're encountering an Ollama connection error, it is likely due to the backe
    - Inside `/etc/systemd/system/ollama.service`, you need to add `Environment="OLLAMA_HOST=0.0.0.0:11434"`. (Change the port number if you are using a different one.) Then reload the systemd manager configuration with `systemctl daemon-reload`, and restart Ollama by `systemctl restart ollama`. For more information see [Ollama docs](https://github.com/ollama/ollama/blob/main/docs/faq.md#setting-environment-variables-on-linux)
 
    - Ensure that the port (default is 11434) is not blocked by your firewall.
+
+4. **Podman users running Ollama in a sibling container:**
+
+   - Put both containers on the same custom Podman network and use the Ollama container name (for example `http://ollama-gpu:11434`) instead of host aliases.
 
 #### Lemonade Connection Errors
 
